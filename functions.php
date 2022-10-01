@@ -85,6 +85,9 @@ function getCities() {
 //jinai gauna kaip parametra nerikiuota masyva
 //ir grazina rikiuota masyva
 function sortClients($klientai) {
+    if(isset($_GET["page"])) {
+        $klientai = paginate($klientai);
+    }
     if(isset($_GET["sortCollumn"]) && isset($_GET["sortOrder"])) {
         $sortCollumn = $_GET["sortCollumn"];
         $sortOrder = $_GET["sortOrder"];
@@ -145,7 +148,7 @@ function sortClients($klientai) {
 //jjinai gauna kaip parametra nefiltruota masyva
 //ir grazina filtruota masyva
 function filterClients($klientai) {
-
+    
     $miestas = "visi";
 
     if(isset($_GET["miestas"])) {
@@ -167,8 +170,17 @@ function filterClients($klientai) {
 
 //puslapiu mygtuku atvaizdavimas
 function pagination() {
-    
     $klientai = readJson("klientai.json");
+    $miestas = "";
+    if(isset($_GET["miestas"])) {
+        $klientai = filterClients($klientai);
+        $miestas = $_GET["miestas"];
+    }
+    $sortOrder = "";
+    if(isset($_GET["sortOrder"])) {
+        $klientai = filterClients($klientai);
+        $sortOrder = $_GET["sortOrder"];
+    }
     $kiek = count($klientai);//klientu kieki
     $irasaiPerPuslapi = 15;//kiek irasu bus rodoma viename puslapyje
 
@@ -187,24 +199,19 @@ function pagination() {
     // ceil(46/ 15) = 3.11111 = 4
     // floor(46/15) = 3.11111 = 3
 
-
+   
     $puslapiuKiekis = ceil($kiek/$irasaiPerPuslapi);
     echo "<span>Jūs esate $page iš $puslapiuKiekis </span>";
     echo "<ul class='pagination'>";
     for($i=1;$i<$puslapiuKiekis+1;$i++) {
         if($i==$page) {
-            echo "<li class='page-item active'><a class='page-link' href='klientai.php?page=$i&limit=$irasaiPerPuslapi'>$i</a></li>";
+            echo "<li class='page-item active'><a class='page-link' href='klientai.php?page=$i&limit=$irasaiPerPuslapi&miestas=$miestas&sortOrder=$sortOrder'>$i</a></li>";
         } else {
-            echo "<li class='page-item'><a class='page-link' href='klientai.php?page=$i&limit=$irasaiPerPuslapi'>$i</a></li>";
+            echo "<li class='page-item'><a class='page-link' href='klientai.php?page=$i&limit=$irasaiPerPuslapi&miestas=$miestas&sortOrder=$sortOrder''>$i</a></li>";
         }
        
     }
     echo "</ul>";
-
-
-    
-
-    //var_dump($puslapiuKiekis);
 }
 
 //irasu nukarpymas
@@ -232,6 +239,7 @@ function paginate($klientai) {
     $page = 1;
     if(isset($_GET["page"])){
         $page = $_GET["page"];
+
     }
 
     $kiek = count($klientai);
@@ -255,13 +263,13 @@ function paginate($klientai) {
 //void tuscia
 function getClients() {
     $klientai = readJson("klientai.json");
-    
+
     $klientai = sortClients($klientai);
     $klientai = filterClients($klientai);
-
     if((isset($_GET["limit"]) && $_GET["limit"] != "visi") || !isset($_GET["limit"])) {
         $klientai = paginate($klientai);    
     }  
+
 
 
     //a)Sujungti filtravimo ir rikiavimo formas
@@ -376,24 +384,22 @@ function pavyzdys() {
 
 //array_slice - funkcija, kuri atrenka masyvo dali pagal nurodyta kriteriju
 
-function masyvoPjaustymas() {
-    $masyvas = array(1,2,3,4,5,6,7,8,9,10,11);
-    //masyvas, nuo kurios vietos norime imti duomenis, kiek duomenu norime paimti, ar norime isaugoti sena indeksa(true)
-    //nuo pasirinkto puslapio 3, man atvaizduoja duomenis
+// function masyvoPjaustymas() {
+//     $masyvas = array(1,2,3,4,5,6,7,8,9,10,11);
+//     //masyvas, nuo kurios vietos norime imti duomenis, kiek duomenu norime paimti, ar norime isaugoti sena indeksa(true)
+//     //nuo pasirinkto puslapio 3, man atvaizduoja duomenis
 
-    $page = $_GET["page"];
-    $irasuKiekisPuslapyje = 2;
-    $offset = ($page * $irasuKiekisPuslapyje) - $irasuKiekisPuslapyje;
+//     $page = $_GET["page"];
+//     $irasuKiekisPuslapyje = 2;
+//     $offset = ($page * $irasuKiekisPuslapyje) - $irasuKiekisPuslapyje;
 
-    $dinaminisPuslapis = array_slice($masyvas,$offset,$irasuKiekisPuslapyje, true);
+//     $dinaminisPuslapis = array_slice($masyvas,$offset,$irasuKiekisPuslapyje, true);
 
-    var_dump($dinaminisPuslapis);
-    $pirmasPuslapis = array_slice($masyvas,0,2, true); // (1 * 2) - 2 = 0
-    // var_dump($pirmasPuslapis);
-    $antrasPuslapis = array_slice($masyvas,2,2, true); //  (2 * 2) - 2 = 2
-    // var_dump($antrasPuslapis);
-    $treciasPuslapis = array_slice($masyvas,4,2, true); // ($page * $irasuKiekisPuslapyje) - irasuKiekisPuslapyje = 4
-    // var_dump($treciasPuslapis);
-}
-
-?>
+//     var_dump($dinaminisPuslapis);
+//     $pirmasPuslapis = array_slice($masyvas,0,2, true); // (1 * 2) - 2 = 0
+//     // var_dump($pirmasPuslapis);
+//     $antrasPuslapis = array_slice($masyvas,2,2, true); //  (2 * 2) - 2 = 2
+//     // var_dump($antrasPuslapis);
+//     $treciasPuslapis = array_slice($masyvas,4,2, true); // ($page * $irasuKiekisPuslapyje) - irasuKiekisPuslapyje = 4
+//     // var_dump($treciasPuslapis);
+// }
